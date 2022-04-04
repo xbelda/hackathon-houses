@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "cl-hackathon-houses"
+version = "0.1.0"
+description = ""
+authors = ["Xavier Belda <xavier.belda@adevinta.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+torch = "^1.10.2"
+ipywidgets = "^7.6.5"
+pytorch-lightning = "^1.5.10"
+
+[tool.poetry.dev-dependencies]
+jupyterlab = "^3.2.9"
+pandas = "^1.4.0"
+torchmetrics = "^0.7.2"
+torchvision = "^0.11.3"
+mlflow = "^1.23.1"
+jupytext = "^1.13.7"
+optuna = "^2.10.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
