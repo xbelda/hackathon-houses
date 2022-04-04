@@ -1,0 +1,8 @@
+# Folders
+.idea
+data
+mlruns
+
+# Files
+*.ipynb
+*.pyc
