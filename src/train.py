@@ -4,10 +4,10 @@ import torch
 from torchvision import datasets, transforms
 from src.model import HouseNet
 import pytorch_lightning as pl
-from omegaconf import OmegaConf, DictConfig
+from omegaconf import DictConfig
 
 
-def main(config: DictConfig):
+def train_net(config: DictConfig):
     base_path = Path(config.BASE_PATH)
     input_size = config.INPUT_SIZE
     batch_size = config.BATCH_SIZE
@@ -71,8 +71,3 @@ def main(config: DictConfig):
                          logger=logger)
     trainer.logger.log_hyperparams({"batch_size": batch_size})
     trainer.fit(pt_model, train_dataloader, test_dataloader)
-
-
-if __name__ == "__main__":
-    config = OmegaConf.load("bin/config/train.yml")
-    main(config)
