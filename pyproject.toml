@@ -10,6 +10,7 @@ torch = "^1.10.2"
 ipywidgets = "^7.6.5"
 pytorch-lightning = "^1.5.10"
 timm = "^0.5.4"
+omegaconf = "^2.2.0"
 
 [tool.poetry.dev-dependencies]
 jupyterlab = "^3.2.9"
