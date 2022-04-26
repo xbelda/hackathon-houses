@@ -5,7 +5,6 @@ from torchvision import datasets, transforms
 from src.model import HouseNet
 import pytorch_lightning as pl
 
-
 BASE_PATH = Path("./data/House_Rooms_Images_Split")
 INPUT_SIZE = 224
 BATCH_SIZE = 32
@@ -13,7 +12,6 @@ NUM_WORKERS = 8
 LEARNING_RATE = 1e-3
 FREEZE_CNN = True
 RESNET_SIZE = 34
-
 
 
 def main():
@@ -57,10 +55,16 @@ def main():
     early_stopping = pl.callbacks.EarlyStopping('Loss/Val', min_delta=1e-3)
 
     # Logging
-    logger = pl.loggers.MLFlowLogger()
+    logger = pl.loggers.MLFlowLogger(experiment_name="houses",
+                                     run_name="1",
+                                     tags={"status": "experimentation",
+                                           "dataset": 123})
 
     # Train
-    trainer = pl.Trainer(gpus=torch.cuda.device_count(), callbacks=[early_stopping], logger=logger)
+    trainer = pl.Trainer(gpus=torch.cuda.device_count(),
+                         max_epochs=50,
+                         callbacks=[early_stopping],
+                         logger=logger)
     trainer.logger.log_hyperparams({"batch_size": BATCH_SIZE})
     trainer.fit(pt_model, train_dataloader, test_dataloader)
 
