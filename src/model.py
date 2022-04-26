@@ -1,10 +1,16 @@
 import pytorch_lightning as pl
 import torch
 from torchvision import models
+import timm
 
 
 class HouseNet(pl.LightningModule):
-    def __init__(self, num_classes: int, lr: float, freeze_cnn = True, resnet_size : int = 34):
+
+    def __init__(self,
+                 num_classes: int,
+                 lr: float,
+                 freeze_cnn: bool = True,
+                 resnet_size: int = 34):
         super().__init__()
 
         self.save_hyperparameters()
@@ -16,6 +22,8 @@ class HouseNet(pl.LightningModule):
             self.model = models.resnet18(pretrained=True)
         elif resnet_size == 34:
             self.model = models.resnet34(pretrained=True)
+        elif resnet_size == 50:
+            self.model = timm.create_model("resnext50d_32x4d", pretrained=True)
 
         # Change classification layer
         num_in_features = self.model.fc.in_features
