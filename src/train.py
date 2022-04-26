@@ -4,42 +4,46 @@ import torch
 from torchvision import datasets, transforms
 from src.model import HouseNet
 import pytorch_lightning as pl
-
-BASE_PATH = Path("./data/House_Rooms_Images_Split")
-INPUT_SIZE = 224
-BATCH_SIZE = 32
-NUM_WORKERS = 8
-LEARNING_RATE = 1e-3
-FREEZE_CNN = True
-RESNET_SIZE = 34
+from omegaconf import OmegaConf, DictConfig
 
 
-def main():
+def main(config: DictConfig):
+    base_path = Path(config.BASE_PATH)
+    input_size = config.INPUT_SIZE
+    batch_size = config.BATCH_SIZE
+    num_workers = config.NUM_WORKERS
+    learning_rate = config.LEARNING_RATE
+    freeze_cnn = config.FREEZE_CNN
+    resnet_size = config.RESNET_SIZE
+
     # Train Data
+    normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                     std=[0.229, 0.224, 0.225])
+
     train_transforms = transforms.Compose([
-        transforms.RandomResizedCrop(INPUT_SIZE),
+        transforms.RandomResizedCrop(input_size),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        normalize
     ])
 
-    train_dataset = datasets.ImageFolder(BASE_PATH / "train", transform=train_transforms)
+    train_dataset = datasets.ImageFolder(base_path / "train", transform=train_transforms)
     train_dataloader = torch.utils.data.DataLoader(train_dataset,
-                                                   batch_size=BATCH_SIZE,
-                                                   num_workers=NUM_WORKERS,
+                                                   batch_size=batch_size,
+                                                   num_workers=num_workers,
                                                    shuffle=True)
     # Test Data
     test_transforms = transforms.Compose([
-        transforms.Resize(INPUT_SIZE),
-        transforms.CenterCrop(INPUT_SIZE),
+        transforms.Resize(input_size),
+        transforms.CenterCrop(input_size),
         transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        normalize
     ])
 
-    test_dataset = datasets.ImageFolder(BASE_PATH / "test", transform=test_transforms)
+    test_dataset = datasets.ImageFolder(base_path / "test", transform=test_transforms)
     test_dataloader = torch.utils.data.DataLoader(test_dataset,
-                                                  batch_size=BATCH_SIZE,
-                                                  num_workers=NUM_WORKERS,
+                                                  batch_size=batch_size,
+                                                  num_workers=num_workers,
                                                   shuffle=False)
 
     # Ensure that all classes are correctly set
@@ -47,16 +51,16 @@ def main():
 
     # Model
     pt_model = HouseNet(num_classes=len(train_dataset.classes),
-                        lr=LEARNING_RATE,
-                        freeze_cnn=FREEZE_CNN,
-                        resnet_size=RESNET_SIZE)
+                        lr=learning_rate,
+                        freeze_cnn=freeze_cnn,
+                        resnet_size=resnet_size)
 
     # Early Stopping
     early_stopping = pl.callbacks.EarlyStopping('Loss/Val', min_delta=1e-3)
 
     # Logging
     logger = pl.loggers.MLFlowLogger(experiment_name="houses",
-                                     run_name="1",
+                                     run_name="2",
                                      tags={"status": "experimentation",
                                            "dataset": 123})
 
@@ -65,9 +69,10 @@ def main():
                          max_epochs=50,
                          callbacks=[early_stopping],
                          logger=logger)
-    trainer.logger.log_hyperparams({"batch_size": BATCH_SIZE})
+    trainer.logger.log_hyperparams({"batch_size": batch_size})
     trainer.fit(pt_model, train_dataloader, test_dataloader)
 
 
 if __name__ == "__main__":
-    main()
+    config = OmegaConf.load("bin/config/train.yml")
+    main(config)
